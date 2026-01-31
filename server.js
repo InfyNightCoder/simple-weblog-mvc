@@ -10,9 +10,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
 
 function initializeDatabase() {
   return new Promise((resolve, reject) => {
@@ -159,3 +156,44 @@ app.delete('/api/posts/:id', (req, res) => {
     res.json({ message: 'Post deleted successfully' });
   });
 });
+
+// Initialize and start server
+async function startServer() {
+  try {
+    db = await initializeDatabase();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Blog MVC REST API Server running on http://localhost:${PORT}`);
+      console.log('📚 Available endpoints:');
+      console.log('   GET    /api/posts');
+      console.log('   GET    /api/posts/:id');
+      console.log('   POST   /api/posts');
+      console.log('   PUT    /api/posts/:id');
+      console.log('   DELETE /api/posts/:id');
+      console.log('');
+      console.log('🌐 Client application: http://localhost:' + PORT);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shutting down server...');
+  if (db) {
+    db.close((err) => {
+      if (err) {
+        console.error('Error closing database:', err);
+      } else {
+        console.log('📊 Database connection closed');
+      }
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+});
+
+// Start the server
+startServer();
